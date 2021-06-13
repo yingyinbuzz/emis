@@ -1,0 +1,292 @@
+#!/usr/bin/env perl
+# vim:ft=perl
+
+use strict;
+use warnings;
+use POSIX qw(strftime);
+use JSON;
+use Carp;
+
+my $curl_ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36";
+my $cookie = "/tmp/emis_cookie.txt";
+my $curl_opts = "-s -L -A '$curl_ua' -b '$cookie' -c '$cookie'";
+my $site = "http://emis.jnjy.net.cn";
+
+sub http_get;
+sub http_post;
+sub sick_leave;
+sub is_holiday;
+sub get_captcha;
+sub report_absent;
+sub log_init;
+sub logs;
+sub log_done;
+my $log_f = undef;
+
+my $pub_holidays = {
+  2019 => {
+    9 => [13],
+    10 => [1..7],
+  },
+  2020 => {
+    1 => [1, 24..31],
+    2 => [1..29],
+    3 => [1..31],
+    4 => [1..26],
+    5 => [1..5],
+    6 => [25..27],
+    7 => [7..9],
+    8 => [1..30],
+    10 => [1..8],
+  },
+  2021 => {
+    1 => [1..3, 21..26, 28..31],
+    2 => [1..10, 11..17],
+    4 => [3..5],
+    5 => [1..5],
+    6 => [7..9, 12..14],
+    9 => [12..21],
+    10 => [1..7],
+  },
+};
+my $work_weekends = {
+  2020 => {
+    1 => [19],
+    2 => [1],
+    4 => [26],
+    5 => [9],
+    6 => [28],
+    7 => [5, 11, 12],
+    9 => [27],
+    10 => [10],
+    11 => [21],
+  },
+  2021 => {
+    2 => [7, 20],
+    4 => [17, 25],
+    5 => [8],
+    6 => [5, 6, 12],
+    9 => [18, 26],
+    10 => [9],
+  },
+};
+
+my $accounts = [
+];
+
+log_init();
+for my $acc (@$accounts) {
+  my $now = localtime;
+  logs("<hr><b>$now</b>: Report for user <b>$acc->{user}</b>");
+  report_absent($acc->{user}, $acc->{pass});
+}
+log_done();
+
+sub report_absent {
+  my ($user, $pass) = @_;
+
+  my @now = localtime;
+  my $year = $now[5] + 1900;
+  my $month = $now[4] + 1;
+  my $day = $now[3];
+  my $wday = $now[6];
+  logs("TODAY:$year $month $day $wday");
+
+  if (is_holiday($year, $month, $day, $wday)) {
+    logs("<font color=#ff00ff>Today is holiday, no need to report</font>");
+    return 0;
+  }
+
+  my $r = "";
+
+  #
+  # Login
+  #
+  $r = http_get("$site/Login.aspx");
+  defined($r) && $r ne '' or confess "Get login page failed";
+
+  my $t = join('', map(int(rand(10)), (0..9)));
+  $r = http_get("$site/Ajax/CodeImg.aspx?ImgWidth=100&ImgHeight=30&Fitness=100&t=$t");
+  defined($r) && $r ne '' or confess "Get captcha image failed";
+  my $captcha = get_captcha($cookie);
+  defined($captcha) or confess "Couldn't read captcha";
+  logs("CAPTCHA: <b>$captcha</b>");
+  $r = http_post("$site/Ajax/Default.ashx", {
+      jsonType => 'LoginServer',
+      lt => 1,
+      u => $user,
+      p => $pass,
+    });
+  if (!defined($r)) {
+    logs("<font color=#ff0000>Login failed</font>");
+    return 0;
+  }
+  logs("Login='$r'");
+
+  # Get class information
+  $r = http_post("$site/ControlCenter/Controllers/Default.ashx", {
+      MethodName => 'GetEmisSchoolTree',
+    });
+  if (!defined($r)) {
+    logs("<font color=#ff0000>Get school tree failed</font>");
+    return 0;
+  }
+  printf "School tree=%s\n", $r;
+
+  my $today = strftime("%Y/%m/%d", localtime);
+  $r = http_post("$site/ControlCenter/AdminEMIS/Controllers/Default.ashx", {
+      MethodName => 'GetStudentAbsentFind',
+      bSubDate => $today,
+      page => 1,
+      pagesize => 50,
+      sortname => 'AbsentID',
+      sortorder => 'asc',
+    });
+  if (!defined($r)) {
+    logs("<font color=#ff0000>Get student absent failed</font>");
+    return 0;
+  }
+  printf "Student absent list=%s\n", $r;
+  my $json = decode_json($r);
+  if ($json->{Total} > 0) {
+    logs("<font color=#ff00ff>Already submitted, no need to submit again</font>");
+    return 0;
+  }
+
+  $r = http_get("$site/ControlCenter/AdminEMIS/Students/StudentAbsentList.aspx");
+  if (!defined($r)) {
+    logs("<font color=#ff0000>Get student absent list failed</font>");
+    return 0;
+  }
+  my $classId = undef;
+  if ($r =~ /ClassID\s*=\s*"(?<classId>[^"]+)"/) {
+    $classId = $+{classId};
+  } else {
+    logs("<font color=#ff0000>Class ID not found</font>");
+    return 0;
+  }
+
+  $r = http_post("$site/ControlCenter/AdminEMIS/Controllers/Default.ashx?MethodName=UpClassAllStudentAbsent", {
+      MethodName => 'UpClassAllStudentAbsent',
+      ClassID => $classId,
+    });
+  if (!defined($r)) {
+    logs("<font color=#ff0000>Submit failed</font>");
+    return 0;
+  }
+  logs("<font color=#008800>DONE</font>");
+  return 1;
+}
+
+sub http_get {
+  my ($url, $output) = @_;
+  my $cmd = "curl $curl_opts '$url'";
+  defined($output) and $cmd = "$cmd -o '$output'";
+  printf "GET %s\n", $cmd;
+  my $r = `$cmd`;
+  $? == 0 or $r = undef;
+  return $r;
+}
+
+sub http_post {
+  my ($url, $data) = @_;
+  my $form = join(' ', map({"--form-string '" . $_ . "=" . $data->{$_} . "'"} keys(%$data)));
+  my $cmd = "curl $curl_opts $form '$url'";
+  printf "POST %s\n", $cmd;
+  my $r = `$cmd`;
+  $? == 0 or $r = undef;
+  return $r;
+}
+
+sub get_captcha {
+  my $fn = shift;
+  my $captcha = undef;
+  open my $f, "<$fn" or confess "Couldn't open '$fn': $!";
+  while (<$f>) {
+    chomp;
+    if (/CheckCode\s+(?<code>[^\s]+)\s*$/) {
+      $captcha = $+{code};
+      last;
+    }
+  }
+  close $f;
+  return $captcha;
+}
+
+sub is_weekend
+{
+  my $wd = shift;
+  return $wd == 6 || $wd == 0; # Saturday/Sunday
+}
+
+sub find_day
+{
+  my ($ds, $y, $m, $d) = @_;
+
+  defined($ds->{$y}) or return 0;
+  defined($ds->{$y}->{$m}) or return 0;
+  for (@{$ds->{$y}->{$m}}) {
+    $d == $_ and return 1;
+  }
+  return 0;
+}
+
+sub is_public_holiday
+{
+  my ($y, $m, $d) = @_;
+  return find_day($pub_holidays, $y, $m, $d);
+}
+sub is_work_day
+{
+  my ($y, $m, $d) = @_;
+  return find_day($work_weekends, $y, $m, $d);
+}
+
+sub is_holiday {
+  my ($year, $month, $day, $wday) = @_;
+
+  return (is_weekend($wday) || is_public_holiday($year, $month, $day)) && !is_work_day($year, $month, $day);
+}
+
+sub sick_leave {
+  my $classId = shift;
+  my $studentId = shift;
+  my $description = shift;
+
+  my $r = http_post("$site/ControlCenter/AdminEMIS/Controllers/Default.ashx", {
+      MethodName => 'SetStudentAbsent',
+      StudentID => $studentId,
+      ClassID => $classId,
+      columnname => 'AbsentTypeName',
+      NewValue => 2,
+    });
+  defined($r) or warn "NO GOOD 3";
+
+  $r = http_post("$site/ControlCenter/AdminEMIS/Controllers/Default.ashx", {
+      MethodName => 'SetStudentAbsent',
+      StudentID => $studentId,
+      ClassID => $classId,
+      columnname => 'Description',
+      NewValue => $description,
+    });
+  defined($r) or warn "NO GOOD 3.1";
+}
+
+sub log_init {
+  my $log_fn = "/home/yy/w/nsfz/emis/log/report.html";
+  open($log_f, ">$log_fn") or die "Couldn't open '$log_fn': $!";
+  print $log_f "<html>\n";
+  print $log_f "<head><title>Report Log</title></head>\n";
+  print $log_f "<body style='font-family: monospace'>\n";
+}
+
+sub logs {
+  print  @_, "\n";
+  print $log_f @_, "<br>\n";
+}
+
+sub log_done {
+  print $log_f "</body>\n";
+  print $log_f "</html>\n";
+  close $log_f;
+}
