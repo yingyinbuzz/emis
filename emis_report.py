@@ -29,11 +29,11 @@ if __name__ == '__main__':
     # Parse inputs
     ap = argparse.ArgumentParser(description='EMIS automation utility')
     ap.add_argument('--account', type=str, required=True,
-                    help='Account definition file')
+                    help='Account definition file (JSON)')
     ap.add_argument('--holiday', type=str, required=True,
-                    help='Holiday definition file')
+                    help='Holiday definition file (JSON)')
     ap.add_argument('--workday', type=str, required=True,
-                    help='Work day definition file')
+                    help='Work day definition file (JSON)')
     ap.add_argument('--logfile', type=str, required=True,
                     help='Log filename')
     args = ap.parse_args()
