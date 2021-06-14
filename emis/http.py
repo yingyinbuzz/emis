@@ -8,19 +8,22 @@ class Http:
         self.site = 'http://emis.jnjy.net.cn'
         self.headers = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36'}
         self.logger = logger
+        self.cookies = {}
 
     def _get(self, url):
         url = '{}{}'.format(self.site, url)
-        r = requests.get(url, headers=self.headers)
+        r = requests.get(url, headers=self.headers, cookies=self.cookies)
         if r.status_code != requests.codes.ok:
             raise Exception('Could not get page {}'.format(url))
+        self.cookies = r.cookies
         return r
 
     def _post(self, url, data):
         url = '{}{}'.format(self.site, url)
-        r = requests.post(url, headers=self.headers, data=data)
+        r = requests.post(url, headers=self.headers, cookies=self.cookies, data=data)
         if r.status_code != requests.codes.ok:
             raise Exception('Could not post on {}'.format(url))
+        self.cookies = r.cookies
         return r
 
     def _log(self, msg):
@@ -48,8 +51,7 @@ class Http:
 
     def fetch_class_id(self):
         r = self._get('/ControlCenter/AdminEMIS/Students/StudentAbsentList.aspx')
-        print(r.text)
-        m = re.search(r'ClassId\s*=\s*(?P<classId>[^"]+)', r.text)
+        m = re.search(r'ClassID\s*=\s*"(?P<classId>[^"]+)"', r.text)
         if m is None:
             raise Exception('Class ID not found')
         return m.group('classId')

@@ -59,9 +59,8 @@ if __name__ == '__main__':
                 try:
                     http = emis.http.Http(logger=lambda x: log(f, x))
                     r = http.login(account['username'], account['password'])
-                    print(r.text)
                     class_id = http.fetch_class_id()
-                    print(class_id)
+                    log(f, 'ClassId=<b>{}</b>'.format(class_id))
                 except Exception as e:
                     log(f, '<font color=#ff0000>{}</font>'.format(e))
             else:
