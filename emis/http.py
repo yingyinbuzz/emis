@@ -89,10 +89,26 @@ class Http:
                 'sortorder': 'asc'}
         r = self._post('/ControlCenter/AdminEMIS/Controllers/Default.ashx',
                        data)
-        return json.loads(r.text)
+        jo = json.loads(r.text)
+        return jo['Rows']
 
     def report_absense(self, class_id):
         data = {'MethodName': 'UpClassAllStudentAbsent',
                 'ClassID': class_id}
         r = self._post('/ControlCenter/AdminEMIS/Controllers/Default.ashx?MethodName=UpClassAllStudentAbsent', data)
+        return r.text
+
+    def sick_leave(self, class_id, student_id, description):
+        data = {'MethodName': 'SetStudentAbsent',
+                'StudentID': student_id,
+                'ClassID': class_id,
+                'columnname': 'AbsentTypeName',
+                'NewValue': 2}
+        r = self._post('/ControlCenter/AdminEMIS/Controllers/Default.ashx', data)
+        data = {'MethodName': 'SetStudentAbsent',
+                'StudentID': student_id,
+                'ClassID': class_id,
+                'columnname': 'Description',
+                'NewValue': description}
+        r = self._post('/ControlCenter/AdminEMIS/Controllers/Default.ashx', data)
         return r.text

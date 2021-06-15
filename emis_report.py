@@ -16,6 +16,12 @@ def is_holiday(dt, holidays, workdays):
     return ((is_weekend(dt) or find_date(dt, holidays)) and
             not find_date(dt, workdays))
 
+def find_student_id(name, students):
+    for s in students:
+        if name == s['FullName']:
+            return s['studId']
+    return None
+
 def log(f, s):
     print('-- {}'.format(s))
     print('{}<br>'.format(s), file=f)
@@ -29,11 +35,13 @@ if __name__ == '__main__':
     # Parse inputs
     ap = argparse.ArgumentParser(description='EMIS automation utility')
     ap.add_argument('--account', type=str, required=True,
-                    help='Account definition file (JSON)')
+                    help='Account configuration file (JSON)')
     ap.add_argument('--holiday', type=str, required=True,
-                    help='Holiday definition file (JSON)')
+                    help='Holiday configuration file (JSON)')
     ap.add_argument('--workday', type=str, required=True,
-                    help='Work day definition file (JSON)')
+                    help='Work day configuration file (JSON)')
+    ap.add_argument('--sickleave', type=str, required=True,
+                    help='Sick leave configuration file (JSON)')
     ap.add_argument('--logfile', type=str, required=True,
                     help='Log filename')
     args = ap.parse_args()
@@ -45,6 +53,8 @@ if __name__ == '__main__':
         holidays = json.load(f)
     with open(args.workday) as f:
         workdays = json.load(f)
+    with open(args.sickleave) as f:
+        sickleaves = json.load(f)
 
     # Report
     now = datetime.datetime.now()
@@ -69,6 +79,16 @@ if __name__ == '__main__':
                         class_id = http.get_class_id()
                         log(f, 'ClassID=<b>{}</b>'.format(class_id))
                         r = http.report_absense(class_id)
+                        if sickleaves:
+                            students = http.get_students()
+                            log(f, 'Total <b>{}</b> students'.format(len(students)))
+                            for sl in sickleaves:
+                                stud_id = find_student_id(sl['name'], students)
+                                if stud_id is None:
+                                    log(f, 'Student <b>{}</b> not found'.format(sl['name']))
+                                else:
+                                    http.sick_leave(class_id, stud_id, sl['description'])
+                                    log(f, 'Sick leave for <b>{}</b>: {}'.format(sl['name'], sl['description']))
                         log(f, '<font color=#008800>DONE</font>'.format())
                 except Exception as e:
                     log(f, '<font color=#ff0000>{}</font>'.format(e))
