@@ -55,15 +55,22 @@ if __name__ == '__main__':
             log(f, '<hr><b>{}</b> Report for user <b>{}</b>'.format(now, account['username']))
             if is_holiday(now, holidays, workdays):
                 log(f, '<font color=#ff00ff>Holidy, no need to report</font>')
-
+            else:
                 try:
                     http = emis.http.Http(logger=lambda x: log(f, x))
-                    r = http.login(account['username'], account['password'])
-                    class_id = http.fetch_class_id()
-                    log(f, 'ClassId=<b>{}</b>'.format(class_id))
+                    http.login(account['username'], account['password'])
+                    teacher = http.get_teacher_name()
+                    log(f, 'Teacher=<font color=#ff8800><b>{}</b></font>'.format(teacher))
+                    http.get_school_tree()
+                    r = http.get_student_absense_report()
+                    if int(r['Total']) > 0:
+                        log(f, '<font color=#ff00ff>Already submitted</font>')
+                    else:
+                        class_id = http.get_class_id()
+                        log(f, 'ClassID=<b>{}</b>'.format(class_id))
+                        r = http.report_absense(class_id)
+                        log(f, '<font color=#008800>DONE</font>'.format())
                 except Exception as e:
                     log(f, '<font color=#ff0000>{}</font>'.format(e))
-            else:
-                pass
         print('</body>', file=f)
         print('</html>', file=f)
