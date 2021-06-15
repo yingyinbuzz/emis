@@ -59,7 +59,7 @@ if __name__ == '__main__':
     # Report
     now = datetime.datetime.now()
     with open(args.logfile, 'w') as f:
-        print('<html><head><title>EMIS Report</title></head>', file=f)
+        print('<html><head><meta charset="utf-8"/><title>EMIS Report</title></head>', file=f)
         print('<body style="font-family: monospace">', file=f)
         for account in accounts:
             log(f, '<hr><b>{}</b> Report for user <b>{}</b>'.format(now, account['username']))
