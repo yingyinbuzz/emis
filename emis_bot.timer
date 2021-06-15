@@ -1,0 +1,8 @@
+[Unit]
+Description=Timer for Jiangning EMIS system
+
+[Install]
+WantedBy=timers.target
+
+[Timer]
+OnCalendar=Mon..Sun *-*-* 07:00:00
