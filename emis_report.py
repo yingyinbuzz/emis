@@ -57,11 +57,11 @@ if __name__ == '__main__':
         sickleaves = json.load(f)
 
     # Report
-    now = datetime.datetime.now()
     with open(args.logfile, 'w') as f:
         print('<html><head><meta charset="utf-8"/><title>EMIS Report</title></head>', file=f)
         print('<body style="font-family: monospace">', file=f)
         for account in accounts:
+            now = datetime.datetime.now()
             log(f, '<hr><b>{}</b> Report for user <b>{}</b>'.format(now, account['username']))
             if is_holiday(now, holidays, workdays):
                 log(f, '<font color=#ff00ff>Holidy, no need to report</font>')
