@@ -79,10 +79,11 @@ if __name__ == '__main__':
                         class_id = http.get_class_id()
                         log(f, 'ClassID=<b>{}</b>'.format(class_id))
                         r = http.report_absense(class_id)
-                        if sickleaves:
+                        sickleaves_in_class = [x for x in sickleaves if x['teacher'] == teacher]
+                        if sickleaves_in_class:
                             students = http.get_students()
                             log(f, 'Total <b>{}</b> students'.format(len(students)))
-                            for sl in sickleaves:
+                            for sl in sickleaves_in_class:
                                 stud_id = find_student_id(sl['name'], students)
                                 if stud_id is None:
                                     log(f, 'Student <b>{}</b> not found'.format(sl['name']))
