@@ -2,7 +2,7 @@
 Description=Bot for Jiangning EMIS system
 
 [Service]
-User=yy
+User=USER_NAME
 Type=oneshot
 ExecStart=sh -c 'date >> /tmp/emis_bot.txt'
-ExecStart=sh -c 'for i in `seq 10`; do echo "Attempt $i"; /home/yy/.b/emis_report.py --account=/home/yy/w/nsfz/emis/accounts.json --holiday=/home/yy/w/nsfz/emis/holidays.json --workday=/home/yy/w/nsfz/emis/workdays.json --sickleave=/home/yy/w/nsfz/emis/sickleave.json --logfile=/home/yy/w/nsfz/emis/log/report.html  && break; done'
+ExecStart=sh -c 'for i in `seq 10`; do echo "Attempt $i"; /PATH/TO/emis_report.py --account=/PATH/TO/accounts.json --holiday=/PATH/TO/holidays.json --workday=/PATH/TO/workdays.json --sickleave=/PATH/TO/sickleave.json --logfile=/PATH/TO/log/report.html  && break; done'
