@@ -31,6 +31,12 @@ class Http:
             self.logger(msg)
 
     def login(self, username, password):
+        """Login into EMIS with given user name and password.
+
+        Arguments:
+        username -- User name.
+        password -- Password.
+        """
         # GET /Login.aspx to get coookies
         r = self._get('/Login.aspx')
         # Get captcha from cookies
@@ -50,11 +56,18 @@ class Http:
         return r.text
 
     def get_school_tree(self):
+        """Fetch current school information from EMIS.
+
+        Arguments:
+        return -- A dict object represents school information.
+        """
         data = {'MethodName': 'GetEmisSchoolTree'}
         r = self._post('/ControlCenter/Controllers/Default.ashx', data)
         return json.loads(r.text)
 
     def get_student_absense_report(self):
+        """Fetch student absense report from EMIS.
+        """
         now = datetime.datetime.now().strftime('%Y/%m/%d')
         data = {'MethodName': 'GetStudentAbsentFind',
                 'bSubDate': now,
@@ -67,11 +80,15 @@ class Http:
         return json.loads(r.text)
 
     def get_teacher_name(self):
+        """Get name of current teacher that logged in.
+        """
         r = self._get('/ControlCenter/Welcome.aspx')
         m = re.search(r'labelusername">(?P<teacher>[^\(]*)', r.text)
         return m.group('teacher') if m is not None else None
 
     def get_class_id(self):
+        """Get class ID of current class.
+        """
         r = self._get('/ControlCenter/AdminEMIS/Students/Student_ClassManager.aspx')
         m = re.search(r'ClassID\s*=\s*(?P<classId>[^;\s]+)', r.text)
         if m is None:
@@ -79,6 +96,8 @@ class Http:
         return m.group('classId')
 
     def get_students(self):
+        """Get list of students of current class.
+        """
         data = {'MethodName': 'GetStudent',
                 'isMyClass': 1,
                 'GroupId': '',
@@ -93,12 +112,17 @@ class Http:
         return jo['Rows']
 
     def report_absense(self, class_id):
+        """Submit an absense report to EMIS without any sick leave.
+        This is the default behavior.
+        """
         data = {'MethodName': 'UpClassAllStudentAbsent',
                 'ClassID': class_id}
         r = self._post('/ControlCenter/AdminEMIS/Controllers/Default.ashx?MethodName=UpClassAllStudentAbsent', data)
         return r.text
 
     def sick_leave(self, class_id, student_id, description):
+        """Submit an sick leave for given student
+        """
         data = {'MethodName': 'SetStudentAbsent',
                 'StudentID': student_id,
                 'ClassID': class_id,
