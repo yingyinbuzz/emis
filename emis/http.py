@@ -97,6 +97,7 @@ class Http:
 
     def get_students(self):
         """Get list of students of current class.
+        Return list of student records in JSON format.
         """
         data = {'MethodName': 'GetStudent',
                 'isMyClass': 1,
@@ -113,7 +114,7 @@ class Http:
 
     def report_absense(self, class_id):
         """Submit an absense report to EMIS without any sick leave.
-        This is the default behavior.
+        The whole class is present.
         """
         data = {'MethodName': 'UpClassAllStudentAbsent',
                 'ClassID': class_id}
@@ -122,6 +123,11 @@ class Http:
 
     def sick_leave(self, class_id, student_id, description):
         """Submit an sick leave for given student
+
+        Arguments:
+        class_id    -- Class ID for the student.
+        student_id  -- Student ID.
+        description -- Sick leave description.
         """
         data = {'MethodName': 'SetStudentAbsent',
                 'StudentID': student_id,
