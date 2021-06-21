@@ -2,7 +2,7 @@
 
 import emis.http
 
-def find_date(dt, defs):
+def date_in(dt, defs):
     year = str(dt.year)
     month = str(dt.month)
     day = dt.day
@@ -13,8 +13,8 @@ def is_weekend(dt):
     return wd == 5 or wd == 6
 
 def is_holiday(dt, holidays, workdays):
-    return ((is_weekend(dt) or find_date(dt, holidays)) and
-            not find_date(dt, workdays))
+    return ((is_weekend(dt) or date_in(dt, holidays)) and
+            not date_in(dt, workdays))
 
 def find_student_id(name, students):
     for s in students:
