@@ -2,11 +2,19 @@
 
 import emis.http
 
+def day_in(day, days):
+    for d in days:
+        if isinstance(d, list):
+            return d[0] <= day <= d[1]
+        else:
+            return day == d
+    return False
+
 def date_in(dt, defs):
     year = str(dt.year)
     month = str(dt.month)
     day = dt.day
-    return (year in defs and month in defs[year] and day in defs[year][month])
+    return (year in defs and month in defs[year] and day_in(day, defs[year][month]))
 
 def is_weekend(dt):
     wd = dt.weekday()
