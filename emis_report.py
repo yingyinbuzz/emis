@@ -52,6 +52,8 @@ if __name__ == '__main__':
                     help='Sick leave configuration file (JSON)')
     ap.add_argument('--logfile', type=str, required=True,
                     help='Log filename')
+    ap.add_argument('--dryrun', default=False, action='store_true',
+                    help='Dry run, do not submit anything')
     args = ap.parse_args()
 
     # Load configuration
@@ -75,7 +77,7 @@ if __name__ == '__main__':
                 log(f, '<font color=#ff00ff>Holidy, no need to report</font>')
             else:
                 try:
-                    http = emis.http.Http(logger=lambda x: log(f, x))
+                    http = emis.http.Http(args.dryrun, logger=lambda x: log(f, x))
                     http.login(account['username'], account['password'])
                     teacher = http.get_teacher_name()
                     log(f, 'Teacher=<font color=#ff8800><b>{}</b></font>'.format(teacher))
