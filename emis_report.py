@@ -4,10 +4,8 @@ import emis.http
 
 def day_in(day, days):
     for d in days:
-        if isinstance(d, list):
-            return d[0] <= day <= d[1]
-        else:
-            return day == d
+        if (isinstance(d, list) and d[0] <= day <= d[1]) or day == d:
+                return True
     return False
 
 def date_in(dt, defs):
