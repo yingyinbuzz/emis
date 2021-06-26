@@ -75,7 +75,7 @@ if __name__ == '__main__':
                 log(f, '<font color=#ff00ff>Holidy, no need to report</font>')
             else:
                 try:
-                    http = emis.http.Http(args.dryrun, logger=lambda x: log(f, x))
+                    http = emis.http.Http(logger=lambda x: log(f, x))
                     http.login(account['username'], account['password'])
                     teacher = http.get_teacher_name()
                     log(f, 'Teacher=<font color=#ff8800><b>{}</b></font>'.format(teacher))
@@ -86,7 +86,10 @@ if __name__ == '__main__':
                     else:
                         class_id = http.get_class_id()
                         log(f, 'ClassID=<b>{}</b>'.format(class_id))
-                        r = http.report_absense(class_id)
+                        if args.dryrun:
+                            log('<font color=#00ffff>Dry run, absense not submitted</font>')
+                        else:
+                            http.report_absense(class_id)
                         sickleaves_in_class = [x for x in sickleaves if x['teacher'] == teacher]
                         if sickleaves_in_class:
                             students = http.get_students()
@@ -96,7 +99,10 @@ if __name__ == '__main__':
                                 if stud_id is None:
                                     log(f, 'Student <b>{}</b> not found'.format(sl['name']))
                                 else:
-                                    http.sick_leave(class_id, stud_id, sl['description'])
+                                    if args.dryrun:
+                                        self._log('<font color=#00ffff>Dry run, sick leave not submitted</font>')
+                                    else:
+                                        http.sick_leave(class_id, stud_id, sl['description'])
                                     log(f, 'Sick leave for <b>{}</b>: {}'.format(sl['name'], sl['description']))
                         log(f, '<font color=#008800>DONE</font>'.format())
                 except Exception as e:

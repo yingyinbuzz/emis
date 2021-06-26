@@ -6,10 +6,9 @@ import datetime
 import requests
 
 class Http:
-    def __init__(self, dry_run=False, logger=None):
+    def __init__(self, logger=None):
         self.site = 'http://emis.jnjy.net.cn'
         self.headers = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36'}
-        self.dry_run = dry_run
         self.logger = logger
         self.session = requests.session()
 
@@ -117,13 +116,10 @@ class Http:
         """Submit an absense report to EMIS without any sick leave.
         The whole class is present.
         """
-        if not self.dry_run:
-            data = {'MethodName': 'UpClassAllStudentAbsent',
-                    'ClassID': class_id}
-            r = self._post('/ControlCenter/AdminEMIS/Controllers/Default.ashx?MethodName=UpClassAllStudentAbsent', data)
-            return r.text
-        else:
-            self._log('<font color=#00ffff>Dry run, absense not submitted</font>')
+        data = {'MethodName': 'UpClassAllStudentAbsent',
+                'ClassID': class_id}
+        r = self._post('/ControlCenter/AdminEMIS/Controllers/Default.ashx?MethodName=UpClassAllStudentAbsent', data)
+        return r.text
 
     def sick_leave(self, class_id, student_id, description):
         """Submit an sick leave for given student
@@ -133,19 +129,16 @@ class Http:
         student_id  -- Student ID.
         description -- Sick leave description.
         """
-        if not self.dry_run:
-            data = {'MethodName': 'SetStudentAbsent',
-                    'StudentID': student_id,
-                    'ClassID': class_id,
-                    'columnname': 'AbsentTypeName',
-                    'NewValue': 2}
-            r = self._post('/ControlCenter/AdminEMIS/Controllers/Default.ashx', data)
-            data = {'MethodName': 'SetStudentAbsent',
-                    'StudentID': student_id,
-                    'ClassID': class_id,
-                    'columnname': 'Description',
-                    'NewValue': description}
-            r = self._post('/ControlCenter/AdminEMIS/Controllers/Default.ashx', data)
-            return r.text
-        else:
-            self._log('<font color=#00ffff>Dry run, sick leave not submitted</font>')
+        data = {'MethodName': 'SetStudentAbsent',
+                'StudentID': student_id,
+                'ClassID': class_id,
+                'columnname': 'AbsentTypeName',
+                'NewValue': 2}
+        r = self._post('/ControlCenter/AdminEMIS/Controllers/Default.ashx', data)
+        data = {'MethodName': 'SetStudentAbsent',
+                'StudentID': student_id,
+                'ClassID': class_id,
+                'columnname': 'Description',
+                'NewValue': description}
+        r = self._post('/ControlCenter/AdminEMIS/Controllers/Default.ashx', data)
+        return r.text
