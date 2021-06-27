@@ -81,6 +81,8 @@ class Http:
 
     def get_teacher_name(self):
         """Get name of current teacher that logged in.
+        Arguments:
+        return -- Teacher name of current class.
         """
         r = self._get('/ControlCenter/Welcome.aspx')
         m = re.search(r'labelusername">(?P<teacher>[^\(]*)', r.text)
@@ -88,6 +90,8 @@ class Http:
 
     def get_class_id(self):
         """Get class ID of current class.
+        Arguments:
+        return -- Current class ID.
         """
         r = self._get('/ControlCenter/AdminEMIS/Students/Student_ClassManager.aspx')
         m = re.search(r'ClassID\s*=\s*(?P<classId>[^;\s]+)', r.text)
@@ -97,7 +101,8 @@ class Http:
 
     def get_students(self):
         """Get list of students of current class.
-        Return list of student records in JSON format.
+        Arguments:
+        return -- List of student records in JSON format.
         """
         data = {'MethodName': 'GetStudent',
                 'isMyClass': 1,
