@@ -65,8 +65,10 @@ class Http:
         r = self._post('/ControlCenter/Controllers/Default.ashx', data)
         return json.loads(r.text)
 
-    def get_student_absense_report(self):
+    def get_absense_report(self):
         """Fetch student absense report from EMIS.
+        Arguments:
+        return -- Absense report information in JSON format.
         """
         now = datetime.datetime.now().strftime('%Y/%m/%d')
         data = {'MethodName': 'GetStudentAbsentFind',
@@ -119,7 +121,7 @@ class Http:
 
     def report_absense(self, class_id):
         """Submit an absense report to EMIS without any sick leave.
-        The whole class is present.
+        The whole class is reported as present.
         """
         data = {'MethodName': 'UpClassAllStudentAbsent',
                 'ClassID': class_id}

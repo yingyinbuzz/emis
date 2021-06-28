@@ -80,7 +80,7 @@ if __name__ == '__main__':
                     teacher = http.get_teacher_name()
                     log(f, 'Teacher=<font color=#ff8800><b>{}</b></font>'.format(teacher))
                     http.get_school_tree()
-                    r = http.get_student_absense_report()
+                    r = http.get_absense_report()
                     if int(r['Total']) > 0:
                         log(f, '<font color=#ff00ff>Already submitted</font>')
                     else:
