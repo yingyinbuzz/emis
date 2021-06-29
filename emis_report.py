@@ -3,6 +3,14 @@
 import emis.http
 
 def day_in(day, days):
+    """Check whether a given day is in given days.
+    Arguments:
+    day    -- Datetime object represents the day to be checked.
+    days   -- List of single days, each element could be either.
+              * A integer represents day of month (1..31)
+              * A 2-element-list represents day range ([begin, end] inclusive)
+    return -- True if given day in given day ranges.
+    """
     for d in days:
         if (isinstance(d, list) and d[0] <= day <= d[1]) or day == d:
                 return True
