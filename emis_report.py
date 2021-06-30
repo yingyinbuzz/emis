@@ -17,6 +17,12 @@ def day_in(day, days):
     return False
 
 def date_in(dt, defs):
+    """Check whether a given date is in date collection.
+    Argument:
+    dt     -- Date to be checked.
+    defs   -- Date collection.
+    return -- True if given date is in date collection.
+    """
     year = str(dt.year)
     month = str(dt.month)
     day = dt.day
