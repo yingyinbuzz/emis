@@ -29,6 +29,10 @@ def date_in(dt, defs):
     return (year in defs and month in defs[year] and day_in(day, defs[year][month]))
 
 def is_weekend(dt):
+    """Check whether a given date is weekend (Saturday or Sunday).
+    dt     -- Date to be checked.
+    return -- True if given date is weedend.
+    """
     wd = dt.weekday()
     return wd == 5 or wd == 6
 
