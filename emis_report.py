@@ -18,7 +18,7 @@ def day_in(day, days):
 
 def date_in(dt, defs):
     """Check whether a given date is in date collection.
-    Argument:
+    Arguments:
     dt     -- Date to be checked.
     defs   -- Date collection.
     return -- True if given date is in date collection.
@@ -30,13 +30,20 @@ def date_in(dt, defs):
 
 def is_weekend(dt):
     """Check whether a given date is weekend (Saturday or Sunday).
+    Arguments:
     dt     -- Date to be checked.
     return -- True if given date is weedend.
     """
     wd = dt.weekday()
     return wd == 5 or wd == 6
 
-def is_holiday(dt, holidays, workdays):
+def is_day_off(dt, holidays, workdays):
+    """Check whether a given date is a day off (no reporting needed).
+    Arguments:
+    dt       -- Date to be checked.
+    holidays -- Holidays definitions.
+    workdays -- Workday definitions(working weekends etc).
+    """
     return ((is_weekend(dt) or date_in(dt, holidays)) and
             not date_in(dt, workdays))
 
@@ -89,7 +96,7 @@ if __name__ == '__main__':
         for account in accounts:
             now = datetime.datetime.now()
             log(f, '<hr><b>{}</b> Report for user <b>{}</b>'.format(now, account['username']))
-            if is_holiday(now, holidays, workdays):
+            if is_day_off(now, holidays, workdays):
                 log(f, '<font color=#ff00ff>Holidy, no need to report</font>')
             else:
                 try:
