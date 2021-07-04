@@ -48,6 +48,11 @@ def is_day_off(dt, holidays, workdays):
             not date_in(dt, workdays))
 
 def find_student_id(name, students):
+    """Find ID of student by given student name.
+    Arguments:
+    name -- Student name.
+    students -- List of student records(usually returned by 'get_students').
+    """
     for s in students:
         if name == s['FullName']:
             return s['studId']
