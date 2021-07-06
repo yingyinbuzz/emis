@@ -59,6 +59,11 @@ def find_student_id(name, students):
     return None
 
 def log(f, s):
+    """Print log messages on console and into given file.
+    Arguments:
+    f -- A file object into which the log message will be printed.
+    s -- The log message.
+    """
     print('-- {}'.format(s))
     print('{}<br>'.format(s), file=f)
 
