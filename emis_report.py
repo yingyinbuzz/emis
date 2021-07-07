@@ -105,40 +105,40 @@ if __name__ == '__main__':
         print('<body style="font-family: monospace">', file=f)
         for account in accounts:
             now = datetime.datetime.now()
-            log(f, '<hr><b>{}</b> Report for user <b>{}</b>'.format(now, account['username']))
+            log(f, '<hr><b>{}</b> Report for user "<b>{}</b>".'.format(now, account['username']))
             if is_day_off(now, holidays, workdays):
-                log(f, '<font color=#ff00ff>Holidy, no need to report</font>')
+                log(f, '<font color=#ff00ff>Holidy, no need to report.</font>')
             else:
                 try:
                     http = emis.http.Http(logger=lambda x: log(f, x))
                     http.login(account['username'], account['password'])
                     teacher = http.get_teacher_name()
-                    log(f, 'Teacher=<font color=#ff8800><b>{}</b></font>'.format(teacher))
+                    log(f, 'Teacher="<font color=#ff8800><b>{}</b></font>".'.format(teacher))
                     http.get_school_tree()
                     r = http.get_absense_report()
                     if int(r['Total']) > 0:
-                        log(f, '<font color=#ff00ff>Already submitted</font>')
+                        log(f, '<font color=#ff00ff>Already submitted.</font>')
                     else:
                         class_id = http.get_class_id()
-                        log(f, 'ClassID=<b>{}</b>'.format(class_id))
+                        log(f, 'Class ID="<b>{}</b>".'.format(class_id))
                         if args.dryrun:
-                            log('<font color=#00ffff>Dry run, absense not submitted</font>')
+                            log('<font color=#00ffff>Dry run, absense not submitted.</font>')
                         else:
                             http.report_absense(class_id)
                         sickleaves_in_class = [x for x in sickleaves if x['teacher'] == teacher]
                         if sickleaves_in_class:
                             students = http.get_students()
-                            log(f, 'Total <b>{}</b> students'.format(len(students)))
+                            log(f, 'Total <b>{}</b> students.'.format(len(students)))
                             for sl in sickleaves_in_class:
                                 stud_id = find_student_id(sl['name'], students)
                                 if stud_id is None:
-                                    log(f, 'Student <b>{}</b> not found'.format(sl['name']))
+                                    log(f, 'Student "<b>{}</b>" not found.'.format(sl['name']))
                                 else:
                                     if args.dryrun:
-                                        self._log('<font color=#00ffff>Dry run, sick leave not submitted</font>')
+                                        self._log('<font color=#00ffff>Dry run, sick leave not submitted.</font>')
                                     else:
                                         http.sick_leave(class_id, stud_id, sl['description'])
-                                    log(f, 'Sick leave for <b>{}</b>: {}'.format(sl['name'], sl['description']))
+                                    log(f, 'Sick leave for "<b>{}</b>": "{}".'.format(sl['name'], sl['description']))
                         log(f, '<font color=#008800>DONE</font>'.format())
                 except Exception as e:
                     log(f, '<font color=#ff0000>{}</font>'.format(e))
