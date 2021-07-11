@@ -27,6 +27,10 @@ class Http:
         return r
 
     def _log(self, msg):
+        """Log given message.
+        Arguments:
+        msg -- The message to be logged.
+        """
         if self.logger:
             self.logger(msg)
 
