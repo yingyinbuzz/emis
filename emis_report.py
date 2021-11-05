@@ -37,15 +37,16 @@ def is_weekend(dt):
     wd = dt.weekday()
     return wd == 5 or wd == 6
 
-def is_day_off(dt, holidays, workdays):
+def is_day_off(dt, holidays, workdays, work_on_saturday):
     """Check whether a given date is a day off (no reporting needed).
     Arguments:
-    dt       -- Date to be checked.
-    holidays -- Holidays definitions.
-    workdays -- Workday definitions(working weekends etc).
+    dt               -- Date to be checked.
+    holidays         -- Holidays definitions.
+    workdays         -- Workday definitions(working weekends etc).
+    work_on_saturday -- Saturday as work day.
     """
     return ((is_weekend(dt) or date_in(dt, holidays)) and
-            not date_in(dt, workdays))
+            not date_in(dt, workdays)) and not (work_on_saturday and dt.weekday() == 5)
 
 def find_student_id(name, students):
     """Find ID of student by given student name.
@@ -81,6 +82,8 @@ if __name__ == '__main__':
                     help='Holiday configuration file (JSON)')
     ap.add_argument('--workday', type=str, required=True,
                     help='Work day configuration file (JSON)')
+    ap.add_argument('--work-on-saturday', default=False, action='store_true',
+                    help='Mark Saturday as work day.')
     ap.add_argument('--sickleave', type=str, required=True,
                     help='Sick leave configuration file (JSON)')
     ap.add_argument('--logfile', type=str, required=True,
@@ -106,7 +109,7 @@ if __name__ == '__main__':
         for account in accounts:
             now = datetime.datetime.now()
             log(f, '<hr><b>{}</b> Report for user "<b>{}</b>".'.format(now, account['username']))
-            if is_day_off(now, holidays, workdays):
+            if is_day_off(now, holidays, workdays, args.work_on_saturday):
                 log(f, '<font color=#ff00ff>Holidy, no need to report.</font>')
             else:
                 try:
