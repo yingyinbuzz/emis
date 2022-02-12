@@ -45,13 +45,16 @@ def is_day_off(dt, holidays, workdays, work_on_saturday):
     workdays         -- Workday definitions(working weekends etc).
     work_on_saturday -- Saturday as work day.
     """
-    if not is_weekend(dt) and not date_in(dt, holidays):
-        return False
     if date_in(dt, workdays):
         return False
-    if work_on_saturday and dt.weekday() == 5 and not date_in(dt, holidays):
-        return False;
-    return True
+    if date_in(dt, holidays):
+        return True
+    if is_weekend(dt):
+        if work_on_saturday and dt.weekday() == 5:
+            return False
+        else:
+            return True
+    return False
 
 def find_student_id(name, students):
     """Find ID of student by given student name.
