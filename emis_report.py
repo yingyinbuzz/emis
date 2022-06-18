@@ -64,7 +64,12 @@ def find_student_id(name, students):
     """
     for s in students:
         if name == s['FullName']:
-            return s['studId']
+            if 'studId' in s:
+                return s['studId']
+            elif 'stuID' in s:
+                return s['stuID']
+            else:
+                raise Exception(s)
     return None
 
 def log(f, s):

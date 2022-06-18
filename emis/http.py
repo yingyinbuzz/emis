@@ -144,7 +144,7 @@ class Http:
                 'StudentID': student_id,
                 'ClassID': class_id,
                 'columnname': 'AbsentTypeName',
-                'NewValue': 2}
+                'NewValue': 1}
         r = self._post('/ControlCenter/AdminEMIS/Controllers/Default.ashx', data)
         data = {'MethodName': 'SetStudentAbsent',
                 'StudentID': student_id,
